@@ -111,5 +111,30 @@ class CheckupsController extends Controller
 
     public function FindCheckupsByDate(Request $request)
     {
+        $date = $request->validate([
+            'year' => 'required|numeric',
+            'month' => 'required|numeric',
+            'day' => 'required|numeric'
+        ]);
+
+        $checkups = Checkup::where('year', $date['year'])->where('month', $date['month'])->where('day', $date['day'])->get();
+        $res = [];
+        foreach ($checkups as $c) {
+            $res[] = [
+                'id' => $c->id,
+                'name' => $c->patient->name,
+                'owner' => $c->patient->owner->firstName . ' ' . $c->patient->owner->lastName,
+                'age' => $c->patient->age,
+                'gender' => $c->patient->gender == 0 ? 'نر' : 'ماده',
+                'type' => $c->patient->type()->get(['name'])[0]->name,
+                'race' => $c->patient->race()->get(['name'])[0]->name,
+                'date' => $c->year . '/' . $c->month . '/' . $c->day,
+                'sympthoms' => $c->sympthoms,
+                'diagnosis' => $c->diagnosis,
+                'treatment' => $c->treatment
+            ];
+        }
+
+        return $res;
     }
 }
