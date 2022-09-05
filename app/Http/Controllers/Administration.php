@@ -11,7 +11,8 @@ use function GuzzleHttp\Promise\exception_for;
 
 class Administration extends Controller
 {
-    public function register(Request $request){
+    public function register(Request $request)
+    {
 
         $data = $request->validate([
             'first_name' => 'required|string|max:64',
@@ -32,15 +33,16 @@ class Administration extends Controller
         ], 201);
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $data = $request->validate([
             'username' => 'string|required',
             'password' => 'string|required'
         ]);
 
         $user = User::where('username', $data['username'])->first();
-        
-        if(!$user || $user->password !== $data['password']){
+
+        if (!$user || $user->password !== $data['password']) {
             return response([
                 'message' => 'user not found'
             ], 401);
@@ -54,13 +56,17 @@ class Administration extends Controller
         ], 202);
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         auth()->user()->tokens()->delete();
 
         return ['message' => 'logged out successfully'];
     }
 
-    public function updateUserInfo(Request $request){
+    public function updateUserInfo(Request $request)
+    {
+        if (auth()->user()->role > 0) return response('', 401);
+
         $data = $request->validate([
             'first_name' => 'required|string|max:32',
             'last_name' => 'required|string|max:32',
@@ -68,37 +74,42 @@ class Administration extends Controller
             'phone' => 'nullable|digits:11|unique:users,phone',
             'role' => 'required|digit'
         ]);
-        
+
         $user = User::where('username', '=', $data['username'])->first();
-        
-        if(!isset($user) || empty($user))
+
+        if (!isset($user) || empty($user))
             return response([
                 "message" => "user not found"
             ], 404);
 
         $user->update($data);
-        
+
         return response(['user_data' => $user], 201);
     }
 
-    public function getUserData(Request $request){
+    public function getUserData(Request $request)
+    {
         $data = $request->validate(['user_id' => 'string|required']);
-        
+
         $user = User::where('id', '=', $data['user_id'])->first();
 
-        if(!isset($user) || empty($user))
+        if (!isset($user) || empty($user))
             return response(['message' => 'user not found'], 403);
 
         return response(['user_data' => $user], 202);
     }
 
-    public function getAllUsers(Request $request){
+    public function getAllUsers(Request $request)
+    {
+        if (auth()->user()->role > 0) return response('', 401);
         $users = User::all();
         return response(['all_users' => $users], 202);
     }
 
-    public function deleteUser(Request $request){
-        $data = $request->validate(['id'=>'numeric|required']);
+    public function deleteUser(Request $request)
+    {
+        if (auth()->user()->role > 0) return response('', 401);
+        $data = $request->validate(['id' => 'numeric|required']);
         User::where('id', $data['id'])->delete();
 
         // $request->validate(['id'=>'numeric|required']);

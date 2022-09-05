@@ -79,10 +79,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('races/get', 'Get');
         Route::delete('races/delete', 'Remove');
     });
-
-    Route::get('auth', function () {
-        return auth()->user()->id;
-    });
 });
 
 Route::post('/user/register', [Administration::class, 'register']);
