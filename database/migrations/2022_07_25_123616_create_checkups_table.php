@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('checkups', function (Blueprint $table) {
             $table->id();
             $table->integer('patient_id');
+            $table->integer('added_by');
             $table->text('sympthoms');
             $table->text('diagnosis');
             $table->text('treatment');

@@ -17,12 +17,14 @@ class Checkup extends Model
         'treatment',
         'day',
         'month',
-        'year'
+        'year',
+        'added_by'
     ];
 
     public $timestamps = false;
 
-    public function patient(){
+    public function patient()
+    {
         return $this->hasOne(Patient::class, 'id', 'patient_id');
     }
 }

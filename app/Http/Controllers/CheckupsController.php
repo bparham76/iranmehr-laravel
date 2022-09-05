@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Checkup;
 use App\Models\Owner;
 use App\Models\Patient;
+use App\Models\User;
 use PhpParser\Node\Stmt\TryCatch;
 
 use function PHPUnit\Framework\returnSelf;
@@ -25,7 +26,9 @@ class CheckupsController extends Controller
                 'year' => 'required|integer'
             ]);
 
-            $checkup = Checkup::create($data);
+            $data['added_by'] = auth()->user()->id;
+
+            Checkup::create($data);
 
             return response([
                 'message' => 'check up session created successfully.'
@@ -42,6 +45,7 @@ class CheckupsController extends Controller
         $checkups = Checkup::all();
         $res = [];
         foreach ($checkups as $c) {
+            $user = User::find($c->added_by);
             $res[] = [
                 'patient_name' => $c->patient->name,
                 'patient_gender' => $c->patient->gender == 0 ? 'نر' : 'ماده',
@@ -49,7 +53,8 @@ class CheckupsController extends Controller
                 'owner_name' => $c->patient->owner->firstName . ' ' . $c->patient->owner->lastName,
                 'year' => $c->year,
                 'month' => $c->month,
-                'day' => $c->day
+                'day' => $c->day,
+                'added_by' => $user->first_name . ' ' . $user->last_name
             ];
         }
         return $res;
@@ -63,6 +68,7 @@ class CheckupsController extends Controller
         foreach ($patients as $p) {
             $t_c = $p->checkups()->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')->get();
             foreach ($t_c as $c) {
+                $user = User::find($c->added_by);
                 $checkups[] = [
                     'id' => $c->id,
                     'name' => $p->name,
@@ -74,7 +80,8 @@ class CheckupsController extends Controller
                     'date' => $c->year . '/' . $c->month . '/' . $c->day,
                     'sympthoms' => $c->sympthoms,
                     'diagnosis' => $c->diagnosis,
-                    'treatment' => $c->treatment
+                    'treatment' => $c->treatment,
+                    'added_by' => $user->first_name . ' ' . $user->last_name
                 ];
             }
         }
@@ -90,6 +97,7 @@ class CheckupsController extends Controller
             foreach ($o->patients as $p) {
                 $t_c = $p->checkups()->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')->get();
                 foreach ($t_c as $c) {
+                    $user = User::find($c->added_by);
                     $checkups[] = [
                         'id' => $c->id,
                         'name' => $p->name,
@@ -101,7 +109,8 @@ class CheckupsController extends Controller
                         'date' => $c->year . '/' . $c->month . '/' . $c->day,
                         'sympthoms' => $c->sympthoms,
                         'diagnosis' => $c->diagnosis,
-                        'treatment' => $c->treatment
+                        'treatment' => $c->treatment,
+                        'added_by' => $user->first_name . ' ' . $user->last_name
                     ];
                 }
             }
@@ -120,6 +129,7 @@ class CheckupsController extends Controller
         $checkups = Checkup::where('year', $date['year'])->where('month', $date['month'])->where('day', $date['day'])->get();
         $res = [];
         foreach ($checkups as $c) {
+            $user = User::find($c->added_by);
             $res[] = [
                 'id' => $c->id,
                 'name' => $c->patient->name,
@@ -131,7 +141,8 @@ class CheckupsController extends Controller
                 'date' => $c->year . '/' . $c->month . '/' . $c->day,
                 'sympthoms' => $c->sympthoms,
                 'diagnosis' => $c->diagnosis,
-                'treatment' => $c->treatment
+                'treatment' => $c->treatment,
+                'added_by' => $user->first_name . ' ' . $user->last_name
             ];
         }
 
